@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Social Media App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0095f6;
+        }
+        .post {
+            background: white;
+            border-radius: 8px;
+            margin: 10px 0;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .post img {
+            width: 25%;
+            border-radius: 8px;
+        }
+        input, textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .comment-section {
+            margin-top: 10px;
+        }
+        .comments {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #007bb5;
+        }
+
+        
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">MySocialApp</div>
+        <button onclick="toggleLogin()">Login</button>
+        <button onclick="toggleRegister()">Register</button>
+        <button id="logout" style="display:none;" onclick="logout()">Logout</button>
+        <button onclick="toggleInvite()">Invite Friends</button>
+    </header>
+
+    <div id="login" style="display:none;">
+        <h2>Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username" />
+        <input type="password" id="loginPassword" placeholder="Password" />
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div id="register" style="display:none;">
+        <h2>Register</h2>
+        <input type="text" id="registerUsername" placeholder="Username" />
+        <input type="password" id="registerPassword" placeholder="Password" />
+        <button onclick="register()">Register</button>
+    </div>
+
+    <div id="inviteSection" style="display:none;">
+        <h2>Invite Friends</h2>
+        <input type="text" id="friendEmail" placeholder="Enter friend's email" />
+        <button onclick="inviteFriend()">Send Invitation</button>
+        <div id="inviteMessage"></div>
+    </div>
+
+    <div id="postSection" style="display:none;">
+        <h2>Create a Post</h2>
+        <textarea id="postInput" rows="4" placeholder="What's on your mind?"></textarea>
+        <input type="file" id="imageInput" accept="image/*" />
+        <button onclick="addPost()">Post</button>
+    </div>
+
+    <div id="posts"></div>
+
+    <script>
+        let loggedInUser = null;
+        const users = [];
+        let posts = [];
+
+        function toggleLogin() {
+            document.getElementById('login').style.display = 'block';
+            document.getElementById('register').style.display = 'none';
+            document.getElementById('inviteSection').style.display = 'none';
+        }
+
+        function toggleRegister() {
+            document.getElementById('register').style.display = 'block';
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('inviteSection').style.display = 'none';
+        }
+
+        function toggleInvite() {
+            document.getElementById('inviteSection').style.display = 'block';
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('register').style.display = 'none';
+        }
+
+        function register() {
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+
+            if (username && password) {
+                users.push({ username, password });
+                alert('User registered successfully!');
+                toggleLogin();
+            } else {
+                alert('Please fill in all fields.');
+            }
+        }
+
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                loggedInUser = user.username;
+                alert('Login successful!');
+                document.getElementById('postSection').style.display = 'block';
+                document.getElementById('logout').style.display = 'inline';
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('register').style.display = 'none';
+                displayPosts();
+            } else {
+                alert('Invalid username or password.');
+            }
+        }
+
+        function logout() {
+            loggedInUser = null;
+            document.getElementById('postSection').style.display = 'none';
+            document.getElementById('logout').style.display = 'none';
+            alert('Logged out successfully!');
+        }
+
+        function inviteFriend() {
+            const friendEmail = document.getElementById('friendEmail').value.trim();
+            if (friendEmail === '') {
+                alert('Please enter an email address.');
+                return;
+            }
+            // Simulate sending an invitation
+            document.getElementById('inviteMessage').innerText = `Invitation sent to ${friendEmail}!`;
+            document.getElementById('friendEmail').value = ''; // Clear input
+        }
+
+        function addPost() {
+            const postInput = document.getElementById('postInput');
+            const imageInput = document.getElementById('imageInput');
+            const postText = postInput.value.trim();
+
+            if (postText === '' && !imageInput.files.length) {
+                alert('Please enter some text or upload an image.');
+                return;
+            }
+
+            const img = imageInput.files[0] ? URL.createObjectURL(imageInput.files[0]) : '';
+            const newPost = { user: loggedInUser, text: postText, image: img, likes: 0, comments: [] };
+            posts.unshift(newPost);
+            postInput.value = '';
+            imageInput.value = '';
+            displayPosts();
+        }
+
+        function displayPosts() {
+            const postsContainer = document.getElementById('posts');
+            postsContainer.innerHTML = '';
+            posts.forEach((post, index) => {
+                const postDiv = document.createElement('div');
+                postDiv.classList.add('post');
+                postDiv.innerHTML = `
+                    <h3>${post.user}</h3>
+                    <p>${post.text}</p>
+                    ${post.image ? `<img src="${post.image}" alt="Post image">` : ''}
+                    <button onclick="likePost(${index})">Like (${post.likes})</button>
+                    <div class="comment-section">
+                        <input type="text" placeholder="Add a comment..." id="commentInput${index}" />
+                        <button onclick="addComment(${index})">Comment</button>
+                        <div class="comments" id="comments${index}">${post.comments.map(comment => `<p>${comment}</p>`).join('')}</div>
+                    </div>
+                `;
+                postsContainer.prepend(postDiv);
+            });
+        }
+
+        function likePost(index) {
+            posts[index].likes++;
+            displayPosts();
+        }
+
+        function addComment(index) {
+            const commentInput = document.getElementById(`commentInput${index}`);
+            const commentText = commentInput.value.trim();
+            if (commentText === '') {
+                alert('Please enter a comment.');
+                return;
+            }
+
+            posts[index].comments.push(commentText);
+            commentInput.value = '';
+            displayPosts();
+        }
+    </script>
+</body>
+</html>

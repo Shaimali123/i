@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock, Paper, Scissors</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .history {
+            margin-top: 20px;
+            list-style-type: none;
+            padding: 0;
+        }
+        .history li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Rock, Paper, Scissors</h1>
+<p>Your score: <span id="score">10</span></p>
+<p id="result"></p>
+<button onclick="play('rock')">Rock</button>
+<button onclick="play('paper')">Paper</button>
+<button onclick="play('scissors')">Scissors</button>
+<button onclick="resetGame()">Reset</button>
+
+<h2>Game History</h2>
+<ul id="history" class="history"></ul>
+
+<script>
+    let score = 10;
+
+    function getComputerChoice() {
+        const choices = ['rock', 'paper', 'scissors'];
+        return choices[Math.floor(Math.random() * choices.length)];
+    }
+
+    function determineWinner(player, computer) {
+        if (player === computer) return 'tie';
+        if ((player === 'rock' && computer === 'scissors') || 
+            (player === 'paper' && computer === 'rock') || 
+            (player === 'scissors' && computer === 'paper')) {
+            return 'player';
+        }
+        return 'computer';
+    }
+
+    function play(playerChoice) {
+        const computerChoice = getComputerChoice();
+        const winner = determineWinner(playerChoice, computerChoice);
+        let resultText = '';
+
+        if (winner === 'player') {
+            resultText = `You win! Computer chose ${computerChoice}.`;
+            score++;
+        } else if (winner === 'computer') {
+            resultText = `You lose! Computer chose ${computerChoice}.`;
+            score--;
+        } else {
+            resultText = `It's a tie! Computer also chose ${computerChoice}.`;
+        }
+
+        document.getElementById('result').innerText = resultText;
+        document.getElementById('score').innerText = score;
+
+        // Add to game history
+        addToHistory(playerChoice, computerChoice, resultText);
+
+        if (score <= 0) {
+            alert("Game over! You have no points left.");
+            resetGame();
+        }
+    }
+
+    function addToHistory(playerChoice, computerChoice, resultText) {
+        const history = document.getElementById('history');
+        const historyItem = document.createElement('li');
+        historyItem.innerText = `You chose ${playerChoice}, Computer chose ${computerChoice}: ${resultText}`;
+        history.appendChild(historyItem);
+    }
+
+    function resetGame() {
+        score = 10;
+        document.getElementById('score').innerText = score;
+        document.getElementById('result').innerText = '';
+        document.getElementById('history').innerHTML = ''; // Clear history
+    }
+</script>
+
+</body>
+</html>
